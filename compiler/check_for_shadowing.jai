@@ -1,6 +1,8 @@
 // #load this file in your equivalent of make.jai, and in your message loop call check_for_shadowing.
 // It will report any shadowing as a warning by default, but you can optionally make it error instead.
 
+// @TODO: proc parameters
+
 
 check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
     if checked_for_shadowing  return;
@@ -14,7 +16,7 @@ check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
 
             for expr: decl.expressions
                 if (expr.kind == .BLOCK)
-                    array_add(*blocks, cast(*Code_Block) expr);
+                    table_set(*blocks, cast(*Code_Block) expr, false);
 
             if decl.name == ""
             || decl.type.type == .PROCEDURE
@@ -34,13 +36,19 @@ check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
         if phase.phase == .TYPECHECKED_ALL_WE_CAN {
             checked_for_shadowing = true;
             report_as := ifx report_as_error then Compiler_Report.ERROR else Compiler_Report.WARNING;
-            for block: blocks
-                check_block(block, -1, report_as);
+            for checked, block: blocks
+                if !checked
+                    check_block(block, -1, report_as);
         }
     }
 
     check_block :: (block: *Code_Block, locals_head: int, report_as: Compiler_Report) {
         if block.block_type != .IMPERATIVE return;
+
+        checked, found := table_find(blocks, block);
+        if found && checked  return;
+
+        table_set(*blocks, block, true);
 
         next_head := locals_head;
 
@@ -100,6 +108,6 @@ Local_Variable :: struct {
 
 local_variables : [..] Local_Variable;
 global_variables : Table(string, *Code_Node);
-blocks : [..] *Code_Block;
+blocks : Table(*Code_Block, bool);
 
 checked_for_shadowing := false;
