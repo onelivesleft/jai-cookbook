@@ -1,3 +1,7 @@
+// #load this file in your equivalent of make.jai, and in your message loop call check_for_shadowing.
+// It will report any shadowing as a warning by default, but you can optionally make it error instead.
+
+
 check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
     if checked_for_shadowing  return;
 

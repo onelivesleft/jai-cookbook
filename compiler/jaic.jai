@@ -17,8 +17,6 @@ x64 : bool;
 
 
 set_options :: (using options: *Build_Options) {
-    // set whatever Build_Options you want in here.
-
     if short   shorten_filenames_in_error_messages = !shorten_filenames_in_error_messages;
     if vs      use_visual_studio_message_format    = !use_visual_studio_message_format;
     if lazy    lazy_foreign_function_lookups       = !lazy_foreign_function_lookups;
