@@ -128,6 +128,7 @@ check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
     }
 }
 
+
 #scope_file
 
 
