@@ -1,3 +1,23 @@
+// Used to run a .jai file in bytecode, without producing an executable.
+// Call in long form like this:
+//      jai.exe jai_run.jai -- foo.jai [arg [arg...]]
+// but it's easier to just use the jai_run.bat file, and do:
+//      jai_run foo.jai [arg [arg...]]
+//
+// To associate .jai files with jai_run you can try to use ftype and assoc like this:
+//
+// assoc .jai=jaifile
+// ftype jaifile="C:\repos\jai-cookbook\tools\run_jai.bat" "%L" %*
+//
+// ...but this didn't work for me on Windows 10 because Windows 10.  To get it to work I used
+// this tool from NirSoft:  http://www.nirsoft.net/utils/filetypesman-x64.zip
+// setting the command line for .jai to: (replace with your own path to jai_run.bat)
+//
+//      "C:\Repos\jai-cookbook\tools\jai_run.bat" "%1" %*
+//
+// After this I can type "foo.jai bar" on the command line to run foo.jai directly.
+
+
 #import "Basic";
 #import "Compiler";
 #import "String";
