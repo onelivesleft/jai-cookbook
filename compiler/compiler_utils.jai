@@ -18,3 +18,9 @@ name_from_scope :: (node: *Code_Node) -> string {
     return slice(source_text, start, end - start);
 }
 */
+
+
+has_note :: (notes: [] *Code_Note, note: string) -> bool {
+    for notes  if it.text == note  return true;
+    return false;
+}

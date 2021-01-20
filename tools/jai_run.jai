@@ -25,6 +25,8 @@
 set_options :: (options: *Build_Options) {
     using options;
     emit_debug_info = Debug_Info_Type.NONE;
+    output_path = "c:/temp";
+    intermediate_path = "c:/temp";
 }
 
 
@@ -50,7 +52,7 @@ set_options :: (options: *Build_Options) {
 
     build_options.output_type = .NO_OUTPUT;
     build_options.output_executable_name = executable;
-    build_options.output_path = output_path;
+
     set_options(*build_options);
     workspace := compiler_create_workspace("Main");
     set_build_options(build_options, workspace);

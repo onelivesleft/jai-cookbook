@@ -1,0 +1,4 @@
+compiler/.build/
+scripts/.build/
+*.exe
+*.pdb

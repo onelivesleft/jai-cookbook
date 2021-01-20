@@ -15,14 +15,26 @@
 // @Color  I added some ansi color escape sequences to the output.
 
 
+#import "Basic";
+#import "Compiler";
+#import "String";
+#import "System";
+#import "Process";
+
+#if OS == .WINDOWS {
+    Windows_Resources :: #import "Windows_Resources";
+    Ico_File :: #import "Ico_File";
+}
+
+
 set_options :: (using options: *Build_Options) {
     use_custom_link_command = true;
 }
 
 
 #run {
-    filepath := "foo.jai";
-    executable := "foo";
+    filepath := "../examples/bar.jai";
+    executable := "bar";
 
     output_path : string;
 
@@ -56,7 +68,7 @@ set_options :: (using options: *Build_Options) {
 build_steps :: (message : *Compiler_Message) {
     if message.kind == .COMPILATION_PHASE {
         phase_message := cast (*Compiler_Message_Compilation_Phase) message;
-        if phase_message.phase.phase == .READY_FOR_CUSTOM_LINK_COMMAND
+        if phase_message.phase == .READY_FOR_CUSTOM_LINK_COMMAND
             run_custom_link_command(message.workspace, phase_message, use_system_linker_if_able=true);
     }
 }
