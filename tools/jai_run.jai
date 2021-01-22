@@ -22,8 +22,7 @@
 #import "Compiler";
 #import "String";
 
-set_options :: (options: *Build_Options) {
-    using options;
+set_options :: (using options: *Build_Options) {
     emit_debug_info = Debug_Info_Type.NONE;
     output_path = "c:/temp";
     intermediate_path = "c:/temp";

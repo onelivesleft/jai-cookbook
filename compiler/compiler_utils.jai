@@ -24,3 +24,14 @@ has_note :: (notes: [] *Code_Note, note: string) -> bool {
     for notes  if it.text == note  return true;
     return false;
 }
+
+
+make_code_range :: (node: *Code_Node) -> Source_Code_Range {
+    range : Source_Code_Range = ---;
+    range.fully_pathed_filename  = node.filename;
+    range.line_number_start      = node.l0;
+    range.line_number_end        = node.l1;
+    range.character_number_start = node.c0;
+    range.character_number_end   = node.c1;
+    return range;
+}
