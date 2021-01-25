@@ -17,7 +17,7 @@ set_options :: (using options: *Build_Options) {
 }
 
 
-test_path :: "c:/repos/jaitest/foo.jai";
+test_path :: "c:/repos/jaitest/metacheck.jai";
 
 
 target_path : string;
@@ -27,27 +27,27 @@ target_char : int;
 
 #run {
     args := compiler_get_command_line_arguments();
-    //if args.count != 5 {
-    //    print(help_text);
-    //    exit(1);
-    //}
+    if args.count != 4 {
+        print(help_text);
+        exit(1);
+    }
 
     line_ok : bool;
     char_ok : bool;
 
-    //project_path := args[0];
-    //target_path = args[1];
-    //target_line, line_ok = parse_int(*args[2]);
-    //target_char, char_ok = parse_int(*args[3]);
-    project_path := test_path;
-    target_path  = test_path;
-    target_line = 152;
-    target_char = 5;
+    project_path := args[0];
+    target_path = args[1];
+    target_line, line_ok = parse_int(*args[2]);
+    target_char, char_ok = parse_int(*args[3]);
+    //project_path := test_path;
+    //target_path  = "c:/repos/jaitest/meta.jai";
+    //target_line = 4;
+    //target_char = 5;
 
-    //if !(line_ok && char_ok) {
-    //    print(help_text);
-    //    exit(1);
-    //}
+    if !(line_ok && char_ok) {
+        print(help_text);
+        exit(1);
+    }
 
     output_path : string;
 
@@ -112,7 +112,6 @@ action :: (node: *Code_Node) {
         decl = cast(*Code_Declaration) node;
         name = decl.name;
         range = make_code_range(decl);
-        range.character_number_end = range.character_number_start + name.count;
         //print("% % %:%:%\n\n", decl.name, decl, decl.filename, decl.l0, decl.c0);
     }
     else
@@ -140,12 +139,17 @@ get_idents :: (message: *Compiler_Message) {
         case .COMPILATION_PHASE;
         phase := cast (*Compiler_Message_Compilation_Phase) message;
         if phase.phase == .ALL_TARGET_CODE_BUILT {
-            print("Looking for: %:%:%\n", target_path, target_line, target_char);
+            //print("Looking for: %:%:%\n", target_path, target_line, target_char);
             decl := decl_from_location(target_path, target_line, target_char);
-            print("%\n", decl);
+            decl_range := format_range(make_code_range(decl));
+            print("%\n", decl_range);
             if decl {
                 ranges, _ := table_find(locations, decl);
-                for ranges  print("%\n", format_range(it));
+                for ranges {
+                    range := format_range(it);
+                    if range != decl_range
+                        print("%\n", range);
+                }
             }
         }
     }
@@ -172,10 +176,10 @@ decl_from_location :: (filename: string, line: int, char: int) -> *Code_Declarat
 
 format_location :: (node: *Code_Node) -> string {
     location := make_location(node);
-    return sprint("%:%:%", location.fully_pathed_filename, location.line_number, location.character_number);
+    return sprint("%|%|%", location.fully_pathed_filename, location.line_number, location.character_number);
 }
 
 
 format_range :: (range: Source_Code_Range) -> string {
-    return sprint("%:%:% -> %:%", range.fully_pathed_filename, range.line_number_start, range.character_number_start, range.line_number_end, range.character_number_end);
+    return sprint("%|%|%|%|%", range.fully_pathed_filename, range.line_number_start, range.character_number_start, range.line_number_end, range.character_number_end);
 }

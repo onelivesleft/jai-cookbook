@@ -32,6 +32,11 @@ make_code_range :: (node: *Code_Node) -> Source_Code_Range {
     range.line_number_start      = node.l0;
     range.line_number_end        = node.l1;
     range.character_number_start = node.c0;
-    range.character_number_end   = node.c1;
+    if node.kind == .DECLARATION {
+        decl := cast(*Code_Declaration) node;
+        range.character_number_end = range.character_number_start + decl.name.count;
+    }
+    else
+        range.character_number_end = node.c1;
     return range;
 }
