@@ -1,3 +1,4 @@
+./build/
 compiler/.build/
 scripts/.build/
 *.exe
