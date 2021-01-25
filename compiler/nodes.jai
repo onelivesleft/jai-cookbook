@@ -1,5 +1,21 @@
-#import "Compiler";
-#import "Hash_Table";
+// Walk all nodes from root on down, performing `action(node)` on each one.
+// If `condition(node)` is false that node and its children will be ignored.
+// Call `init_node_walk()` before doing anything else.
+
+
+init_node_walk :: () {
+    table_reset(*visited_serials);
+}
+
+
+revisit_node :: (node: *Code_Node) {
+    table_remove(*visited_serials, node.serial);
+}
+
+
+found_node_count :: () -> int {
+    return visited_serials.count;
+}
 
 
 walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: bool, action: (node: *Code_Node)) {
@@ -8,15 +24,17 @@ walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: b
     _, found := table_find(visited_serials, node.serial);
     if found return;
 
+    table_set(*visited_serials, node.serial, node);
+
     if !condition(node) return;
 
     action(node);
 
-    table_set(*visited_serials, node.serial, node);
 
     walk :: (node: *Code_Node) #expand {
         walk_all_nodes(node, `condition, `action);
     }
+
 
     if node.kind == {
         // @Note '// others: ' comments identify other Code_Node members,
@@ -172,8 +190,8 @@ walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: b
         case .DECLARATION;
         decl := cast(*Code_Declaration) node;
         walk(decl.type_inst);
-        for decl.expressions  walk(it);
         walk(decl.root_expression);
+        for decl.expressions  walk(it);
         walk(decl.alignment_expression);
         for decl.notes  walk(it);
 
@@ -276,6 +294,10 @@ walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: b
 
 
 #scope_file
+
+
+#import "Compiler";
+#import "Hash_Table";
 
 
 visited_serials: Table(s64, *Code_Node);

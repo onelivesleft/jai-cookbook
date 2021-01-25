@@ -17,6 +17,14 @@ set_options :: (using options: *Build_Options) {
 }
 
 
+test_path :: "c:/repos/jaitest/foo.jai";
+
+
+target_path : string;
+target_line : int;
+target_char : int;
+
+
 #run {
     args := compiler_get_command_line_arguments();
     //if args.count != 5 {
@@ -24,19 +32,22 @@ set_options :: (using options: *Build_Options) {
     //    exit(1);
     //}
 
-    //project_path := args[1];
-    //file_path := args[2];
-    //row, row_ok := parse_int(args[3]);
-    //col, col_ok := parse_int(args[4]);
-    project_path := "../examples/qux.jai";
-    file_path    := "../examples/qux.jai";
-    row, row_ok  := 8, true;
-    col, col_ok  := 8, true;
+    line_ok : bool;
+    char_ok : bool;
 
-    if !(row_ok && col_ok) {
-        print(help_text);
-        exit(1);
-    }
+    //project_path := args[0];
+    //target_path = args[1];
+    //target_line, line_ok = parse_int(*args[2]);
+    //target_char, char_ok = parse_int(*args[3]);
+    project_path := test_path;
+    target_path  = test_path;
+    target_line = 152;
+    target_char = 5;
+
+    //if !(line_ok && char_ok) {
+    //    print(help_text);
+    //    exit(1);
+    //}
 
     output_path : string;
 
@@ -77,6 +88,9 @@ condition :: (node: *Code_Node) -> bool {
 }
 
 
+to_revisit : [..] *Code_Ident;
+
+
 action :: (node: *Code_Node) {
     name : string = ---;
     decl : *Code_Declaration = ---;
@@ -86,6 +100,12 @@ action :: (node: *Code_Node) {
         ident := cast(*Code_Ident) node;
         name = ident.name;
         decl = ident.resolved_declaration;
+        if !decl {
+            array_add(*to_revisit, ident);
+            revisit_node(ident);
+            return;
+        }
+
         range = make_code_range(node);
     }
     else if node.kind == .DECLARATION {
@@ -93,11 +113,12 @@ action :: (node: *Code_Node) {
         name = decl.name;
         range = make_code_range(decl);
         range.character_number_end = range.character_number_start + name.count;
+        //print("% % %:%:%\n\n", decl.name, decl, decl.filename, decl.l0, decl.c0);
     }
     else
         return;
 
-    if name == ""  return;
+    if name == "" || decl.filename == ""  return;
 
     existing_list, found := table_find(locations, decl);
     if !found {
@@ -119,50 +140,42 @@ get_idents :: (message: *Compiler_Message) {
         case .COMPILATION_PHASE;
         phase := cast (*Compiler_Message_Compilation_Phase) message;
         if phase.phase == .ALL_TARGET_CODE_BUILT {
-            print("---\n");
-            for list, decl: locations {
-                print("%:\n", decl.name);
-                for range: list  print("%,% -> %,%\n",
-                    range.line_number_start,
-                    range.character_number_start,
-                    range.line_number_end,
-                    range.character_number_end);
-                print("\n");
+            print("Looking for: %:%:%\n", target_path, target_line, target_char);
+            decl := decl_from_location(target_path, target_line, target_char);
+            print("%\n", decl);
+            if decl {
+                ranges, _ := table_find(locations, decl);
+                for ranges  print("%\n", format_range(it));
             }
         }
     }
 }
+
+
+decl_from_location :: (filename: string, line: int, char: int) -> *Code_Declaration {
+    for ranges, decl: locations {
+        if decl.filename != filename  continue;
+        for range: ranges {
+            if line < range.line_number_start || line > range.line_number_end  continue;
+            if line == range.line_number_start && char < range.character_number_start
+            || line == range.line_number_end && char >range.character_number_end
+                continue;
+            return decl;
+        }
+    }
+    return null;
+}
+
 
 #scope_file
 
 
 format_location :: (node: *Code_Node) -> string {
     location := make_location(node);
-    return sprint("%:%,%", location.fully_pathed_filename, location.line_number, location.character_number);
+    return sprint("%:%:%", location.fully_pathed_filename, location.line_number, location.character_number);
 }
 
 
-store_local_variable :: (index: int, name: string, node: *Code_Node) {
-    local : Local_Variable = ---;
-    local.name = name;
-    local.node = node;
-    if local_variables.count <= index {
-        while local_variables.count <= index
-            array_add(*local_variables, local);
-    }
-    else {
-        local_variables[index] = local;
-    }
+format_range :: (range: Source_Code_Range) -> string {
+    return sprint("%:%:% -> %:%", range.fully_pathed_filename, range.line_number_start, range.character_number_start, range.line_number_end, range.character_number_end);
 }
-
-
-Local_Variable :: struct {
-    name : string;
-    node : *Code_Node;
-}
-
-local_variables : [..] Local_Variable;
-last_parameter_index := -1;
-
-global_variables : Table(string, *Code_Node);
-headers : Table(*Code_Procedure_Header, bool);
