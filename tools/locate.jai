@@ -27,7 +27,7 @@ target_char : int;
 
 #run {
     args := compiler_get_command_line_arguments();
-    if args.count != 4 {
+    if args.count < 4 {
         print(help_text);
         exit(1);
     }
