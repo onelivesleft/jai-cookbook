@@ -65,16 +65,16 @@ set_options :: (using options: *Build_Options) {
 }
 
 
-build_steps :: (message : *Compiler_Message) {
+build_steps :: (message : *Message) {
     if message.kind == .COMPILATION_PHASE {
-        phase_message := cast (*Compiler_Message_Compilation_Phase) message;
+        phase_message := cast (*Message_Phase) message;
         if phase_message.phase == .READY_FOR_CUSTOM_LINK_COMMAND
             run_custom_link_command(message.workspace, phase_message, use_system_linker_if_able=true);
     }
 }
 
 
-run_custom_link_command :: (w: Workspace, m: *Compiler_Message_Compilation_Phase, use_system_linker_if_able := true) {
+run_custom_link_command :: (w: Workspace, m: *Message_Phase, use_system_linker_if_able := true) {
     options := get_build_options(w);
 
     // Use the workspace's Os_Target since we want to support
@@ -186,7 +186,7 @@ run_custom_link_command :: (w: Workspace, m: *Compiler_Message_Compilation_Phase
         array_add(*arguments, "/IGNORE:4216");
 
         // If generating an executable, then create lib and exp file inside intermediate directory.
-        if options.output_type == Build_Output_Type.EXECUTABLE {
+        if options.output_type == .EXECUTABLE {
             array_add(*arguments, tprint("/IMPLIB:%1%2.lib", options.intermediate_path, path_strip_extension(options.output_executable_name)));
         }
     } else if target_linux {
@@ -231,7 +231,7 @@ run_custom_link_command :: (w: Workspace, m: *Compiler_Message_Compilation_Phase
             }
 
 
-            if (options.output_type == Build_Output_Type.DYNAMIC_LIBRARY) {
+            if (options.output_type == .DYNAMIC_LIBRARY) {
                 array_add(*arguments, "/DLL");
             }
 

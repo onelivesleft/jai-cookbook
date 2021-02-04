@@ -135,8 +135,10 @@ walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: b
         walk(_for.want_reverse_expression);
         walk(_for.ident_decl);
         walk(_for.index_decl);
-        walk(_for.block);
-        walk(_for.macro_expansion_procedure_call);
+        if _for.macro_expansion_procedure_call
+            walk(_for.macro_expansion_procedure_call);
+        else
+            walk(_for.block);
 
         // case .TYPE_DEFINITION;
         // nop
@@ -191,7 +193,7 @@ walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: b
         decl := cast(*Code_Declaration) node;
         walk(decl.type_inst);
         walk(decl.root_expression);
-        for decl.expressions  walk(it);
+        //for decl.expressions  walk(it);
         walk(decl.alignment_expression);
         for decl.notes  walk(it);
 

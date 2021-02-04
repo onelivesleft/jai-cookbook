@@ -2,10 +2,10 @@
 // It will report any shadowing as a warning by default, but you can optionally make it error instead.
 
 
-check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
+check_for_shadowing :: (message: *Message, report_as_error := false) {
     if message.kind == {
-        case .CODE_TYPECHECKED;
-        code := cast(*Compiler_Message_Code_Typechecked) message;
+        case .TYPECHECKED;
+        code := cast(*Message_Typechecked) message;
         for decl: code.declarations {
             if decl.filename == "" || contains(decl.filename, "modules")
                 continue;
@@ -28,9 +28,9 @@ check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
         }
 
         case .COMPILATION_PHASE;
-        phase := cast (*Compiler_Message_Compilation_Phase) message;
+        phase := cast (*Message_Phase) message;
         if phase.phase == .TYPECHECKED_ALL_WE_CAN {
-            report_as := ifx report_as_error then Compiler_Report.ERROR else Compiler_Report.WARNING;
+            report_as := ifx report_as_error then Report.ERROR else Report.WARNING;
             for checked, header: headers {
                 if checked  continue;
                 if header.body_or_null {
@@ -45,7 +45,7 @@ check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
         }
     }
 
-    check_block :: (block: *Code_Block, locals_head: int, report_as: Compiler_Report) {
+    check_block :: (block: *Code_Block, locals_head: int, report_as: Report) {
         next_head := locals_head;
 
         for variable: block.members
@@ -89,7 +89,7 @@ check_for_shadowing :: (message: *Compiler_Message, report_as_error := false) {
         }
     }
 
-    check_variable :: (variable: *Code_Scope_Entry, locals_head: int, report_as: Compiler_Report) -> next_head: int, added: bool {
+    check_variable :: (variable: *Code_Scope_Entry, locals_head: int, report_as: Report) -> next_head: int, added: bool {
         next_head := locals_head;
 
         value, found := table_find(global_variables, variable.name);

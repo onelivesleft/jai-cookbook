@@ -42,11 +42,11 @@ workspace : Workspace;
 inserted_generated_code := false;
 
 
-build_steps :: (message : *Compiler_Message) {
+build_steps :: (message : *Message) {
     if message.kind == {
         case .CODE_TYPECHECKED;
         // Record all global variables tagged with @my_tag
-        type_checked := cast(*Compiler_Message_Code_Typechecked) message;
+        type_checked := cast(*Message_Typechecked) message;
         for decl : type_checked.declarations {
             if decl.kind == .DECLARATION {
                 if has_note(decl, "my_tag") {
@@ -57,7 +57,7 @@ build_steps :: (message : *Compiler_Message) {
         }
 
         case .COMPILATION_PHASE;
-        phase_message := cast (*Compiler_Message_Compilation_Phase) message;
+        phase_message := cast (*Message_Phase) message;
         phase := phase_message.phase;
         if phase == .TYPECHECKED_ALL_WE_CAN && !inserted_generated_code {
             // All code has been parsed, so generate what we want from the tags.

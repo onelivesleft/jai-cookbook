@@ -23,7 +23,7 @@
 #import "String";
 
 set_options :: (using options: *Build_Options) {
-    emit_debug_info = Debug_Info_Type.NONE;
+    emit_debug_info = .NONE;
     output_path = "c:/temp";
     intermediate_path = "c:/temp";
 }

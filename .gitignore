@@ -1,5 +1,4 @@
 ./build/
-compiler/.build/
-scripts/.build/
+*/.build/
 *.exe
 *.pdb
