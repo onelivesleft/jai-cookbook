@@ -18,7 +18,7 @@ found_node_count :: () -> int {
 }
 
 
-walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: bool, action: (node: *Code_Node)) {
+walk_all_nodes :: (node: *Code_Node, condition: (*Code_Node) -> bool, action: (*Code_Node)) {
     if !node return;
 
     _, found := table_find(visited_serials, node.serial);
@@ -135,9 +135,9 @@ walk_all_nodes :: (node: *Code_Node, condition: (node: *Code_Node) -> process: b
         walk(_for.want_reverse_expression);
         walk(_for.ident_decl);
         walk(_for.index_decl);
-        if _for.macro_expansion_procedure_call
-            walk(_for.macro_expansion_procedure_call);
-        else
+        //if _for.macro_expansion_procedure_call
+        //    walk(_for.macro_expansion_procedure_call);
+        //else
             walk(_for.block);
 
         // case .TYPE_DEFINITION;

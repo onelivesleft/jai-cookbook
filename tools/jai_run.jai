@@ -17,6 +17,8 @@
 //
 // After this I can type "foo.jai bar" on the command line to run foo.jai directly.
 
+// @TODO update to replace `default_metaprogram` instead?
+
 
 #import "Basic";
 #import "Compiler";

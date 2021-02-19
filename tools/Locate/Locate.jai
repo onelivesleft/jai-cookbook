@@ -3,11 +3,11 @@
 #import "Hash_Table";
 #import "String";
 
-#load "../compiler/compiler_utils.jai";
-#load "../compiler/nodes.jai";
+#load "../../compiler/compiler_utils.jai";
+#load "../../compiler/nodes.jai";
 
 
-help_text :: "Usage: jai locate.jai -- <project.jai> <file.jai> <row> <col>\n";
+help_text :: "Usage: jai -import_dir <Locate Folder> -meta Locate <project.jai> -- <file.jai> <row> <col>\n";
 
 
 set_options :: (using options: *Build_Options) {
@@ -28,41 +28,61 @@ finished := false;
 
 #run {
     args := compiler_get_command_line_arguments();
-    //if args.count < 4 {
-    //    print(help_text);
-    //    exit(1);
-    //}
+    if args.count != 3 {
+        print(help_text);
+        exit(1);
+    }
 
     line_ok : bool;
     char_ok : bool;
 
-    //project_path := args[0];
-    //target_path = args[1];
-    //target_line, line_ok = parse_int(*args[2]);
-    //target_char, char_ok = parse_int(*args[3]);
-    project_path := test_path;
-    target_path = test_path;
-    target_line = 67;
-    target_char = 5;
+    target_path = args[0];
+    target_line, line_ok = parse_int(*args[1]);
+    target_char, char_ok = parse_int(*args[2]);
+    //target_path = test_path;
+    //target_line = 67;
+    //target_char = 5;
 
-    //if !(line_ok && char_ok) {
-    //    print(help_text);
-    //    exit(1);
-    //}
+    if !(line_ok && char_ok) {
+        print(help_text);
+        exit(1);
+    }
 
-    output_path : string;
+    workspace := compiler_create_workspace("Target Program");
+    if !workspace {
+        print("Workspace creation failed.\n");
+        return;
+    }
 
-    build_options := get_build_options();
+    files, run_strings := compiler_get_source_files();
+    if files {
+        basename, path := get_basename_and_path(files[0]);
+        if path {
+            old_wd := get_working_directory();
+            set_working_directory(path);
+
+            for * files {
+                print("%\n", it);
+                old_filename := <<it;
+                if is_absolute_path(old_filename) continue;
+                <<it = sprint("%/%", old_wd, old_filename);
+            }
+        }
+    }
+
+    build_options := get_build_options(workspace);
     build_options.output_type = .NO_OUTPUT;
-    set_build_options(build_options);
-
-    workspace := compiler_create_workspace();
+    build_options.emit_debug_info = .NONE;
+    build_options.output_path = "c:/temp"; // @TODO make correct
+    build_options.intermediate_path = "c:/temp";
     set_build_options(build_options, workspace);
 
-    compiler_begin_intercept(workspace);
-    add_build_file(project_path, workspace);
-
     init(*locations);
+
+    compiler_begin_intercept(workspace);
+
+    for files        add_build_file(it, workspace);
+    for run_strings  add_build_string(tprint("#run %;\n", it), workspace);
 
     while !finished {
         message := compiler_wait_for_message();
@@ -74,6 +94,20 @@ finished := false;
     }
 
     compiler_end_intercept(workspace);
+
+    exit(0);
+
+    is_absolute_path :: (path: string) -> bool { // This routine is probably not as correct as we'd like. We'd like to put in a better one! But maybe we will stop doing the cwd thing, or do it differently; hard to say.
+        if !path return false;
+
+        if path[0] == #char "/" return true;  // Backslashes have already been converted to forward slashes by this point.
+        if path.count >= 3 {
+            // @Robustness: Check for a drive letter in character 0?  Anything else?
+            if path[1] == #char ":" return true;
+        }
+
+        return false;
+    }
 }
 
 
@@ -96,6 +130,7 @@ action :: (node: *Code_Node) {
     name : string = ---;
     decl : *Code_Declaration = ---;
     range : Source_Code_Range;
+
 
     if node.kind == .IDENT {
         ident := cast(*Code_Ident) node;
@@ -154,7 +189,11 @@ get_idents :: (message: *Message) {
             finished = true;
 
             // aggregate locations
+            location_list : [..] *Code_Declaration;
             for _, decl: locations
+                array_add(*location_list, decl);
+
+            for decl: location_list
                 walk_all_nodes(decl, condition, action);
 
             for location_list, decl: locations {
@@ -178,7 +217,8 @@ get_idents :: (message: *Message) {
                 }
             }
             print("Revisit count: %\n", to_revisit.count);
-            for to_revisit  print("%\n", format_location(it));
+            //for to_revisit  print("%\n", format_location(it));
+            for to_revisit  print("%\n", <<it);
         }
     }
 }
