@@ -73,8 +73,9 @@ finished := false;
     build_options := get_build_options(workspace);
     build_options.output_type = .NO_OUTPUT;
     build_options.emit_debug_info = .NONE;
-    build_options.output_path = "c:/temp"; // @TODO make correct
-    build_options.intermediate_path = "c:/temp";
+    build_options.output_path = "c:/temp/"; // @TODO make correct
+    build_options.intermediate_path = "c:/temp/";
+    build_options.user_data_u64 = xx *check_message;
     set_build_options(build_options, workspace);
 
     init(*locations);
@@ -86,16 +87,32 @@ finished := false;
 
     while !finished {
         message := compiler_wait_for_message();
-        if !message continue;
-        if message.workspace != workspace continue;
-        if message.kind == .COMPLETE break;
-
-        get_idents(message);
+        valid, complete := my_check_message(message);
+        if complete  break;
     }
 
     compiler_end_intercept(workspace);
 
     exit(0);
+
+    check_message :: (message: *Message) -> valid: bool, complete: bool {
+        if !message return false, false;
+        if message.kind == .COMPLETE return false, true;
+
+        get_idents(message, true);
+
+        return true, false;
+    }
+
+    my_check_message :: (message: *Message) -> valid: bool, complete: bool {
+        if !message return false, false;
+        if message.kind == .COMPLETE return false, true;
+
+        get_idents(message);
+
+        return true, false;
+    }
+
 
     is_absolute_path :: (path: string) -> bool { // This routine is probably not as correct as we'd like. We'd like to put in a better one! But maybe we will stop doing the cwd thing, or do it differently; hard to say.
         if !path return false;
@@ -169,11 +186,56 @@ action :: (node: *Code_Node) {
 }
 
 
-get_idents :: (message: *Message) {
+check_ident :: (node: *Code_Node) {
+    if node.kind == .DECLARATION {
+        decl := cast(*Code_Declaration) node;
+        location, found := table_find(locations, decl);
+        if !found {
+            location_list : Location_List;
+            table_set(*locations, decl, location_list);
+            for expression: decl.expressions
+                if condition(expression)
+                    check_ident(expression);
+        }
+        return;
+    }
+
+    if node.kind != .IDENT  return;
+
+    ident := cast(*Code_Ident) node;
+
+    decl := ident.resolved_declaration;
+    if !decl {
+        array_add(*to_revisit, ident);
+        //print("Missing declaration for: %\n%\n\n", name, format_location(ident));
+        return;
+    }
+    //else {
+    //    print("Found declaration for: %\n%\n%\n\n", name, format_location(ident), format_location(decl));
+    //}
+
+    name := ident.name;
+    if name == "" || decl.filename == ""  return;
+
+    range := make_code_range(node);
+
+    existing_list, found := table_find(locations, decl);
+    if !found {
+        list : Location_List;
+        existing_list = list;
+        //free(*list);
+    }
+    array_add(*existing_list, range);
+    table_set(*locations, decl, existing_list);
+}
+
+
+get_idents :: (message: *Message, debug := false) {
     if message.kind == {
         case .TYPECHECKED;
         code := cast(*Message_Typechecked) message;
         for decl: code.declarations {
+            if debug  print("%\n", <<decl);
             if decl.filename != "" && !contains(decl.filename, "modules") { // @TODO @Performance this is terrible
                 _, found := table_find(locations, decl);
                 if !found {
@@ -193,19 +255,23 @@ get_idents :: (message: *Message) {
             for _, decl: locations
                 array_add(*location_list, decl);
 
-            for decl: location_list
-                walk_all_nodes(decl, condition, action);
-
-            for location_list, decl: locations {
-                print("%\n", format_location(decl));
-                for location_list
-                    print("%\n", format_range(it));
-                print("\n");
+            for decl: location_list {
+                for expression: decl.expressions
+                    if condition(expression)
+                        check_ident(expression);
             }
+            //walk_all_nodes(decl, condition, action);
+
+            //for location_list, decl: locations {
+            //    print("%\n", format_location(decl));
+            //    for location_list
+            //        print("%\n", format_range(it));
+            //    print("\n");
+            //}
 
             // look for ident
-            print("Looking for: %:%:%\n", target_path, target_line, target_char);
             needle := decl_from_location(target_path, target_line, target_char);
+            //print("Looking for: %:%:% = %\n", target_path, target_line, target_char, needle);
             if needle {
                 needle_range := format_range(make_code_range(needle));
                 print("%\n", needle_range);
@@ -216,9 +282,10 @@ get_idents :: (message: *Message) {
                         print("%\n", range);
                 }
             }
-            print("Revisit count: %\n", to_revisit.count);
-            //for to_revisit  print("%\n", format_location(it));
-            for to_revisit  print("%\n", <<it);
+
+            //print("Revisit count: %\n", to_revisit.count);
+            ////for to_revisit  print("%\n", format_location(it));
+            //for to_revisit  print("%\n", <<it);
         }
     }
 }

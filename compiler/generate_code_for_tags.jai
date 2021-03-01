@@ -78,7 +78,7 @@ build_steps :: (message : *Message) {
             }
             */
 
-            append(*builder, "tag_code :: #string TAG_CODE\n");
+            append(*builder, "tag_code :: #string ___JAI\n");
             append(*builder, "dump_vars :: () {\n");
             for type, variable: tagged_variables {
                 type_string : string;
@@ -90,7 +90,7 @@ build_steps :: (message : *Message) {
                 print_to_builder(*builder, "    print(\"% (%) = %%\\n\", %1);\n", variable, type_string);
             }
             append(*builder, "}\n");
-            append(*builder, "TAG_CODE;\n");
+            append(*builder, "___JAI;\n");
 
             add_build_string(builder_to_string(*builder), workspace);
 

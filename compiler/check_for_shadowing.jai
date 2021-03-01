@@ -1,4 +1,4 @@
-// #load this file in your equivalent of make.jai, and in your message loop call check_for_shadowing.
+// #load this file in your equivalent of make.jai, and in your message loop call `check_for_shadowing`.
 // It will report any shadowing as a warning by default, but you can optionally make it error instead.
 
 
