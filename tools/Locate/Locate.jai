@@ -136,7 +136,7 @@ locations : Table(*Code_Declaration, Location_List);
 
 
 condition :: (node: *Code_Node) -> bool {
-    return node.filename != "" && !contains(node.filename, "modules"); // @TODO @Performance this is terrible
+    return decl.enclosing_load && decl.enclosing_load.enclosing_import.module_type == .MAIN_PROGRAM
 }
 
 
@@ -236,6 +236,8 @@ get_idents :: (message: *Message, debug := false) {
         code := cast(*Message_Typechecked) message;
         for decl: code.declarations {
             if debug  print("%\n", <<decl);
+            if decl.enclosing_load && decl.enclosing_load.enclosing_import.module_type != .MAIN_PROGRAM
+                continue;
             if decl.filename != "" && !contains(decl.filename, "modules") { // @TODO @Performance this is terrible
                 _, found := table_find(locations, decl);
                 if !found {

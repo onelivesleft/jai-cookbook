@@ -7,7 +7,7 @@ check_for_shadowing :: (message: *Message, report_as_error := false) {
         case .TYPECHECKED;
         code := cast(*Message_Typechecked) message;
         for decl: code.declarations {
-            if decl.filename == "" || contains(decl.filename, "modules")
+            if decl.enclosing_load && decl.enclosing_load.enclosing_import.module_type != .MAIN_PROGRAM
                 continue;
 
             for expr: decl.expressions
