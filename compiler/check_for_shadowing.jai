@@ -16,7 +16,6 @@ check_for_shadowing :: (message: *Message, report_as_error := false) {
 
             if decl.name == ""
             || decl.type.type == .PROCEDURE
-            || decl.flags & .IS_STRUCT_MEMBER
                 continue;
 
             // global constants have no root expression, but global variables have a LITERAL container?
