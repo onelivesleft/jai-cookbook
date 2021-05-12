@@ -44,7 +44,7 @@ inserted_generated_code := false;
 
 build_steps :: (message : *Message) {
     if message.kind == {
-        case .CODE_TYPECHECKED;
+        case .TYPECHECKED;
         // Record all global variables tagged with @my_tag
         type_checked := cast(*Message_Typechecked) message;
         for decl : type_checked.declarations {
