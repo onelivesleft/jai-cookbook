@@ -244,7 +244,7 @@ run_custom_link_command :: (w: Workspace, m: *Message_Phase, use_system_linker_i
 
     // @Spam Uncomment this line to revert the compilation output containing all the linker
     // args.
-    //print("Link line: %\n", concatenate(..arguments, " "));
+    //print("Link line: %\n", join(..arguments, " "));
 
     success, exit_code, out, err := os_run_command(..arguments, capture_and_return_output=true);
 

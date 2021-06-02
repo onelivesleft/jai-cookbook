@@ -74,7 +74,7 @@ set_options :: (using options: *Build_Options) {
 
     output_path := path_strip_filename(filepath);
     #if OS == .WINDOWS
-        executable := concatenate(path_strip_extension(basename(filepath)), ".exe");
+        executable := join(path_strip_extension(basename(filepath)), ".exe");
     else
         executable := path_strip_extension(basename(filepath));
 
