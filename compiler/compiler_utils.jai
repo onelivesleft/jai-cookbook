@@ -25,7 +25,7 @@ has_note :: (notes: [] *Code_Note, note: string) -> bool {
     return false;
 }
 
-
+/*
 make_code_range :: (node: *Code_Node) -> Source_Code_Range {
     range : Source_Code_Range = ---;
     range.fully_pathed_filename  = node.filename;
@@ -39,4 +39,51 @@ make_code_range :: (node: *Code_Node) -> Source_Code_Range {
     else
         range.character_number_end = node.c1;
     return range;
+}
+*/
+
+name_from_type_info :: (t: *Type_Info) -> name: string #must, valid: bool {
+    if t.type == {
+        case .INTEGER;
+        integer := cast(*Type_Info_Integer)t;
+        if integer.signed {
+            if integer.runtime_size == {
+                case 1;  return "s8", true;
+                case 2;  return "s16", true;
+                case 4;  return "s32", true;
+                case 8;  return "s64", true;
+            }
+        }
+        else {
+            if integer.runtime_size == {
+                case 1;  return "u8", true;
+                case 2;  return "u16", true;
+                case 4;  return "u32", true;
+                case 8;  return "u64", true;
+            }
+        }
+
+        case .FLOAT;
+        if t.runtime_size == 4
+            return "float32", true;
+        else
+            return "float64", true;
+
+
+        case .POINTER;
+        ptr := cast(*Type_Info_Pointer)t;
+        name, valid := name_from_type_info(ptr.pointer_to);
+        return sprint("*%", name), valid;
+
+        case .BOOL;        return "bool", true;
+        case .STRING;      return "string", true;
+        case .VOID;        return "void", true;
+        case .STRUCT;      return "struct", true;
+        case .ANY;         return "Any", true;
+        case .ENUM;        return "enum", true;
+        case .TYPE;        return "type", true;
+        case .CODE;        return "Code", true;
+    }
+
+    return "", false;
 }
