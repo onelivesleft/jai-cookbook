@@ -3,8 +3,8 @@
 #import "Hash_Table";
 #import "String";
 
-#load "../../compiler/compiler_utils.jai";
-#load "../../compiler/nodes.jai";
+#load "../../compiling/compiler_utils.jai";
+#load "../../compiling/nodes.jai";
 
 
 help_text :: "Usage: jai -import_dir <Locate Folder> -meta Locate <project.jai> -- <file.jai> <row> <col>\n";

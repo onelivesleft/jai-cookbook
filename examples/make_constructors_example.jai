@@ -2,7 +2,7 @@
 #import "Compiler";
 #import "String";
 
-#load "../compiler/make_constructors.jai";
+#load "../compiling/make_constructors.jai";
 
 
 #run {
