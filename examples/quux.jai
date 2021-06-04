@@ -6,7 +6,7 @@
 
 
 main :: () {
-    foo := make_foo(100, 200, 1.5, "Hello");
+    foo := make_foo(alpha = 100, delta = "Hello");
     bar := make_bar("World", 500);
     log("%", foo);
     log("%", bar);

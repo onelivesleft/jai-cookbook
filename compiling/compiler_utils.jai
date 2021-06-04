@@ -25,6 +25,7 @@ has_note :: (notes: [] *Code_Note, note: string) -> bool {
     return false;
 }
 
+
 /*
 make_code_range :: (node: *Code_Node) -> Source_Code_Range {
     range : Source_Code_Range = ---;
@@ -41,6 +42,7 @@ make_code_range :: (node: *Code_Node) -> Source_Code_Range {
     return range;
 }
 */
+
 
 name_from_type_info :: (t: *Type_Info) -> name: string #must, valid: bool {
     if t.type == {
