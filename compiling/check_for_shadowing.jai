@@ -7,23 +7,24 @@ check_for_shadowing :: (message: *Message, report_as_error := false) {
         case .TYPECHECKED;
         code := cast(*Message_Typechecked) message;
         for decl: code.declarations {
-            if decl.enclosing_load && decl.enclosing_load.enclosing_import.module_type != .MAIN_PROGRAM
+            if decl.expression.enclosing_load && decl.expression.enclosing_load.enclosing_import.module_type != .MAIN_PROGRAM
                 continue;
 
-            for expr: decl.expressions
-                if (expr.kind == .PROCEDURE_HEADER)
-                    table_set(*headers, cast(*Code_Procedure_Header) expr, false);
+            expr := decl.expression;
+            if (expr.kind == .PROCEDURE_HEADER)
+                table_set(*headers, cast(*Code_Procedure_Header) expr, false);
 
-            if decl.name == ""
-            || decl.type.type == .PROCEDURE
+            if expr.name == ""
+            || expr.type.type == .PROCEDURE
                 continue;
 
             // global constants have no root expression, but global variables have a LITERAL container?
-            if decl.root_expression
-            && ((decl.flags & .IS_CONSTANT) || decl.root_expression.kind != .LITERAL)
-                continue;
+            // @TODO decl.root_expression no longer exists so I'll just disable this check for now...
+            //if decl.root_expression
+            //&& ((decl.flags & .IS_CONSTANT) || decl.root_expression.kind != .LITERAL)
+            //    continue;
 
-            table_set(*global_variables, decl.name, decl);
+            table_set(*global_variables, expr.name, expr);
         }
 
         case .COMPILATION_PHASE;
