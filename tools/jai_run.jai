@@ -32,7 +32,12 @@ set_options :: (using options: *Build_Options) {
 
 
 #run {
-    args := compiler_get_command_line_arguments();
+    args := get_toplevel_command_line();
+    while args.count > 0 && args[0] != "-"{
+        args.data += 1; args.count -= 1;
+    }
+    args.data += 1; args.count -= 1;
+
     if args.count == 0 || !ends_with_nocase(args[0], ".jai") {
         print("Must specify a .jai src file!");
         exit(1);

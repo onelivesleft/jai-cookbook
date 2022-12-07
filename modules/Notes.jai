@@ -38,7 +38,7 @@ process_notes :: (workspace: Workspace) {
 ___jai);
 
     for _, label: note_procs {
-        notes, found := table_find(notes_by_label, label);
+        notes, found := table_find(*notes_by_label, label);
         if found
             print_to_builder(*builder, #string ___jai
     notes = cast(*[..] Note_Data)0x%1;
@@ -88,7 +88,7 @@ add_note :: (note_text: string, declaration: *Code_Declaration) {
                 if header.arguments.count == 1 && header.returns.count == 0  {
                     // @Incomplete We should really check the parameter types, but that means waiting on the PROCEDURE_BODY,
                     //             so for now we'll make do with this; it'll error out later if the types are wrong anyway.
-                    node, found := table_find(note_procs, declaration.name);
+                    node, found := table_find(*note_procs, declaration.name);
                     if found {
                         compiler_report(sprint("Found more than one definition for @Note proc: \"%\"", declaration.name), make_location(declaration), .WARNING);
                         compiler_report("This is the other definition", make_location(node), .ERROR);
@@ -106,7 +106,7 @@ add_note :: (note_text: string, declaration: *Code_Declaration) {
         label = note_text;
     }
 
-    existing_notes, found := table_find(notes_by_label, label);
+    existing_notes, found := table_find(*notes_by_label, label);
 
     notes : [..] Note_Data = ---;
     if found {

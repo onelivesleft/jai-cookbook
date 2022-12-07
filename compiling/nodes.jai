@@ -21,7 +21,7 @@ found_node_count :: () -> int {
 walk_all_nodes :: (node: *Code_Node, condition: (*Code_Node) -> bool, action: (*Code_Node)) {
     if !node return;
 
-    _, found := table_find(visited_serials, node.serial);
+    _, found := table_find(*visited_serials, node.serial);
     if found return;
 
     table_set(*visited_serials, node.serial, node);

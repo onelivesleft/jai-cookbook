@@ -176,7 +176,7 @@ action :: (node: *Code_Node) {
 
     if name == "" || decl.filename == ""  return;
 
-    existing_list, found := table_find(locations, decl);
+    existing_list, found := table_find(*locations, decl);
     if !found {
         list : Location_List;
         existing_list = list;
@@ -189,7 +189,7 @@ action :: (node: *Code_Node) {
 check_ident :: (node: *Code_Node) {
     if node.kind == .DECLARATION {
         decl := cast(*Code_Declaration) node;
-        location, found := table_find(locations, decl);
+        location, found := table_find(*locations, decl);
         if !found {
             location_list : Location_List;
             table_set(*locations, decl, location_list);
@@ -219,7 +219,7 @@ check_ident :: (node: *Code_Node) {
 
     range := make_code_range(node);
 
-    existing_list, found := table_find(locations, decl);
+    existing_list, found := table_find(*locations, decl);
     if !found {
         list : Location_List;
         existing_list = list;
@@ -239,7 +239,7 @@ get_idents :: (message: *Message, debug := false) {
             if decl.enclosing_load && decl.enclosing_load.enclosing_import.module_type != .MAIN_PROGRAM
                 continue;
             if decl.filename != "" && !contains(decl.filename, "modules") { // @TODO @Performance this is terrible
-                _, found := table_find(locations, decl);
+                _, found := table_find(*locations, decl);
                 if !found {
                     location_list : Location_List;
                     table_set(*locations, decl, location_list);
@@ -277,7 +277,7 @@ get_idents :: (message: *Message, debug := false) {
             if needle {
                 needle_range := format_range(make_code_range(needle));
                 print("%\n", needle_range);
-                ranges, _ := table_find(locations, needle);
+                ranges, _ := table_find(*locations, needle);
                 for ranges {
                     range := format_range(it);
                     if range != needle_range

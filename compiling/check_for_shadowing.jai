@@ -92,7 +92,7 @@ check_for_shadowing :: (message: *Message, report_as_error := false) {
     check_variable :: (variable: *Code_Scope_Entry, locals_head: int, report_as: Report) -> next_head: int, added: bool {
         next_head := locals_head;
 
-        value, found := table_find(global_variables, variable.name);
+        value, found := table_find(*global_variables, variable.name);
         if found && value != variable {
             compiler_report(sprint("\nShadowing global: original at %\n", format_location(value)), loc = make_location(variable), mode = report_as);
             print("### % ###\n", variable.name);
